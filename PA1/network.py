@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import data
 import time
@@ -25,7 +27,7 @@ def sigmoid(a):
     float
        Value after applying sigmoid (z from the slides).
     """
-    pass
+    return 1 / (1 + math.exp(-a))
 
 def softmax(a):
     """
@@ -42,7 +44,7 @@ def softmax(a):
     float
        Value after applying softmax (z from the slides).
     """
-    pass
+    return np.exp(a) / np.sum(np.exp(a))
 
 def binary_cross_entropy(y, t):
     """
@@ -61,7 +63,7 @@ def binary_cross_entropy(y, t):
     float 
         binary cross entropy loss value according to above definition
     """
-    pass
+    return (t * np.log(y) + (1 - t) * np.log(1 - y)).mean()
 
 def multiclass_cross_entropy(y, t):
     """
