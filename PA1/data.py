@@ -122,7 +122,7 @@ def onehot_decode(y):
     -------
         1d array (length n) of targets (k)
     """
-    pass
+    return np.argmax(y, axis=1)
 
 def shuffle(dataset):
     """
