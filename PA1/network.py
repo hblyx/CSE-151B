@@ -82,7 +82,7 @@ def multiclass_cross_entropy(y, t):
     float 
         multiclass cross entropy loss value according to above definition
     """
-    pass
+    one_hot_t = data.onehot_encode(t)
 
 class Network:
     def __init__(self, hyperparameters, activation, loss, out_dim):
