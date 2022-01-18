@@ -12,6 +12,7 @@ Start by implementing your methods in non-vectorized format - use loops and othe
 Once you're sure everything works, use NumPy's vector operations (dot products, etc.) to speed up your network.
 """
 
+
 def sigmoid(a):
     """
     Compute the sigmoid function.
@@ -29,6 +30,7 @@ def sigmoid(a):
     """
     return 1 / (1 + math.exp(-a))
 
+
 def softmax(a):
     """
     Compute the softmax function.
@@ -41,10 +43,17 @@ def softmax(a):
         The internal value while a pattern goes through the network
     Returns
     -------
-    float
-       Value after applying softmax (z from the slides).
+    exp
+        the output of softmax
     """
-    return np.exp(a) / np.sum(np.exp(a))
+    exp = np.exp(a)
+
+    # Calculating softmax for all examples.
+    for i in range(len(a)):
+        exp[i] /= np.sum(exp[i])
+
+    return exp
+
 
 def binary_cross_entropy(y, t):
     """
@@ -65,6 +74,7 @@ def binary_cross_entropy(y, t):
     """
     return (t * np.log(y) + (1 - t) * np.log(1 - y)).mean()
 
+
 def multiclass_cross_entropy(y, t):
     """
     Compute multiclass cross entropy.
@@ -82,7 +92,8 @@ def multiclass_cross_entropy(y, t):
     float 
         multiclass cross entropy loss value according to above definition
     """
-    one_hot_t = data.onehot_encode(t)
+    return -np.mean(np.log(y[np.arange(len(t)), t]))
+
 
 class Network:
     def __init__(self, hyperparameters, activation, loss, out_dim):
@@ -96,17 +107,21 @@ class Network:
         Parameters
         ----------
         hyperparameters
-            A Namespace object from `argparse` containing the hyperparameters
+            A dict contains hyper-parameters
         activation
             The non-linear activation function to use for the network
         loss
             The loss function to use while training and testing
+        gradient
+            The gradient function
+        out_dim
+            The output dimensions
         """
         self.hyperparameters = hyperparameters
         self.activation = activation
         self.loss = loss
 
-        self.weights = np.zeros((28*28+1, out_dim))
+        self.weights = np.zeros((28 * 28 + 1, out_dim))  # initialize weights to zeros
 
     def forward(self, X):
         """
@@ -126,7 +141,7 @@ class Network:
         X
             Patterns to create outputs for
         """
-        pass
+        return self.activation(np.matmul(X, self.weights))
 
     def __call__(self, X):
         return self.forward(X)
@@ -150,7 +165,23 @@ class Network:
             accuracy over minibatch
         """
         X, y = minibatch
-        pass
+
+        X = data.append_bias(X)  # append bias
+
+        y_hat = self.forward(X)
+
+        y_hot = data.onehot_encode(y)
+
+        # gradient descendant
+        grad = (1 / X.shape[0]) * np.dot(X.T, (y_hat - y_hot))
+        self.weights = self.weights - self.hyperparameters["learning_rate"] * grad
+
+        loss = self.loss(y_hat, y)
+
+        preds = self.predict(X)
+        acc = self.accuracy(preds, y)
+
+        return loss, acc
 
     def test(self, minibatch):
         """
@@ -172,4 +203,21 @@ class Network:
                 accuracy over minibatch
         """
         X, y = minibatch
-        pass
+
+        X = data.append_bias(X)  # append bias
+
+        y_hat = self.forward(X)
+
+        loss = self.loss(y_hat, y)
+
+        preds = self.predict(X)
+        acc = self.accuracy(preds, y)
+
+        return loss, acc
+
+    def predict(self, X):
+        y_hat = self.forward(X)
+        return np.argmax(y_hat, axis=1)
+
+    def accuracy(self, y, t):
+        return np.sum(t == y) / len(t)

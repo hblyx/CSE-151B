@@ -100,7 +100,7 @@ def onehot_encode(y):
     -------
         2d array (shape n*k) with each row corresponding to a one-hot encoded version of the original value.
     """
-    shape = (y.shape[0], y.max() + 1) # specify shape of the onehot encoded matrix
+    shape = (y.shape[0], len(np.unique(y))) # specify shape of the onehot encoded matrix
     output = np.zeros(shape)
     output[np.arange(y.shape[0]), y] = 1
 
