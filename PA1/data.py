@@ -84,7 +84,7 @@ def min_max_normalize(X, _min = None, _max = None):
 
     return (X - X_min) / (X_max - X_min)
 
-def onehot_encode(y):
+def onehot_encode(y, dim):
     """
     Performs one-hot encoding on y.
 
@@ -100,7 +100,7 @@ def onehot_encode(y):
     -------
         2d array (shape n*k) with each row corresponding to a one-hot encoded version of the original value.
     """
-    shape = (y.shape[0], len(np.unique(y))) # specify shape of the onehot encoded matrix
+    shape = (y.shape[0], dim) # specify shape of the onehot encoded matrix
     output = np.zeros(shape)
     output[np.arange(y.shape[0]), y] = 1
 

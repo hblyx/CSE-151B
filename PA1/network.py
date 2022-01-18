@@ -120,6 +120,7 @@ class Network:
         self.hyperparameters = hyperparameters
         self.activation = activation
         self.loss = loss
+        self.dim = out_dim
 
         self.weights = np.zeros((28 * 28 + 1, out_dim))  # initialize weights to zeros
 
@@ -170,7 +171,7 @@ class Network:
 
         y_hat = self.forward(X)
 
-        y_hot = data.onehot_encode(y)
+        y_hot = data.onehot_encode(y, dim=self.dim)
 
         # gradient descendant
         grad = (1 / X.shape[0]) * np.dot(X.T, (y_hat - y_hot))
