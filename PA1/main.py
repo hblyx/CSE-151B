@@ -1,23 +1,53 @@
 import argparse
 import data
+import network
+import numpy as np
+
+from matplotlib import pyplot as plt
 
 
 def main(hyperparameters):
+    pass # the practical implement and pass dataset in the notebook
 
-    pass
+hyperparameters = {"epochs": 100,
+                   "batch_size": 64,
+                   "learning_rate": 0.001,
+                   "k_folds": 10}
 
-parser = argparse.ArgumentParser(description = 'CSE151B PA1')
-parser.add_argument('--batch-size', type = int, default = 1,
-        help = 'input batch size for training (default: 1)')
-parser.add_argument('--epochs', type = int, default = 100,
-        help = 'number of epochs to train (default: 100)')
-parser.add_argument('--learning-rate', type = float, default = 0.001,
-        help = 'learning rate (default: 0.001)')
-parser.add_argument('--z-score', dest = 'normalization', action='store_const',
-                    default = data.min_max_normalize, const = data.z_score_normalize,
-                    help = 'use z-score normalization on the dataset, default is min-max normalization')
-parser.add_argument('--k-folds', type = int, default = 5,
-        help = 'number of folds for cross-validation')
+# training and validation
+def cross_validation(dataset, hyperparameters, activation, loss, out_dim): # same method in the notebook
+    regressor = network.Network(hyperparameters, activation, loss, out_dim)
 
-hyperparameters = parser.parse_args()
+    losses_train = []
+    losses_val = []
+
+    accs_val = []
+
+    for train, val in data.generate_k_fold_set(dataset, k=hyperparameters["k_folds"]):
+        for epoch in range(hyperparameters["epochs"]):
+            train = data.shuffle(train)
+            loss_train = [] # training loss per epoch including all mini-batchs
+            for minibatch in data.generate_minibatches(train, batch_size=hyperparameters["batch_size"]): # SGD
+                loss_batch, _ = regressor.train(minibatch)
+                loss_train.append(loss_batch)
+
+            loss_val, acc_val = regressor.test(val) # use the current weight to get a validation loss
+
+            if len(losses_val) != 0 and loss_val > losses_val[-1]: # if the validation loss rise up
+                break # early stopping
+
+            loss_train = np.mean(loss_train) # average all mini-batchs
+            losses_train.append(loss_train)
+            losses_val.append(loss_val)
+            accs_val.append(acc_val)
+
+    plt.plot(losses_train)
+    plt.plot(losses_val)
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.title("Loss plot")
+    plt.legend(["Training Loss", "Validation Loss"])
+
+    return regressor, np.mean(accs_val)
+
 main(hyperparameters)
