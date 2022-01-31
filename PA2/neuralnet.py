@@ -29,7 +29,7 @@ class Activation:
         # Type of non-linear activation.
         self.activation_type = activation_type
         # Placeholder for input. This will be used for computing gradients.
-        self.x = None
+        self.a = None
 
     def __call__(self, a):
         """
@@ -41,6 +41,8 @@ class Activation:
         """
         Compute the forward pass.
         """
+        self.a = a
+
         if self.activation_type == "sigmoid":
             return self.sigmoid(a)
 
@@ -69,37 +71,40 @@ class Activation:
         """
         Implement the sigmoid activation here.
         """
-        raise NotImplementedError("Sigmoid not implemented")
+        return 1 / (1 + np.exp(-x))
 
     def tanh(self, x):
         """
         Implement tanh here.
         """
-        raise NotImplementedError("Tanh not implemented")
+        return np.tanh(x)
 
     def ReLU(self, x):
         """
         Implement ReLU here.
         """
-        raise NotImplementedError("ReLU not implemented")
+        return x * (x > 0)
 
     def grad_sigmoid(self):
         """
         Compute the gradient for sigmoid here.
         """
-        raise NotImplementedError("Sigmoid gradient not implemented")
+        return self.sigmoid(self.a) * (1.0 - self.sigmoid(self.a))
 
     def grad_tanh(self):
         """
         Compute the gradient for tanh here.
         """
-        raise NotImplementedError("tanh gradient not implemented")
+        return (1 - np.tanh(self.a))
 
     def grad_ReLU(self):
         """
         Compute the gradient for ReLU here.
         """
-        raise NotImplementedError("ReLU gradient not implemented")
+        x = self.a
+        x[x <= 0] = 0
+        x[x > 0] = 1
+        return x
 
 
 class Layer:
