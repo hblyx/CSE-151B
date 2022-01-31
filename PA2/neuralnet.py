@@ -200,10 +200,16 @@ class NeuralNetwork:
         Implement the softmax function here.
         Remember to take care of the overflow condition.
         """
-        raise NotImplementedError("Softmax not implemented for NeuralNetwork")
+        exp = np.exp(x)
+
+        # Calculating softmax for all examples.
+        for i in range(len(x)):
+            exp[i] /= np.sum(exp[i])
+
+        return exp
 
     def loss(self, logits, targets):
         """
         Compute the categorical cross-entropy loss and return it.
         """
-        raise NotImplementedError("Loss not implemented for NeuralNetwork")
+        return -np.mean(np.log(logits[np.arange(len(targets)), targets]))
