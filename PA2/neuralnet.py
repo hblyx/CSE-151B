@@ -5,6 +5,7 @@
 ################################################################################
 
 import numpy as np
+import data
 import math
 
 
@@ -95,7 +96,7 @@ class Activation:
         """
         Compute the gradient for tanh here.
         """
-        return (1 - np.tanh(self.a))
+        return (1 - np.tanh(self.a) ** 2)
 
     def grad_ReLU(self):
         """
@@ -144,7 +145,12 @@ class Layer:
         Do not apply activation here.
         Return self.a
         """
-        raise NotImplementedError("Forward propagation not implemented for Layer")
+        self.x = x
+
+        self.a = np.dot(x, self.w) + self.b
+
+        return self.a
+
 
     def backward(self, delta):
         """
@@ -152,7 +158,9 @@ class Layer:
         computes gradient for its weights and the delta to pass to its previous layers.
         Return self.dx
         """
-        raise NotImplementedError("Backward propagation not implemented for Layer")
+        self.d_x = np.dot(delta, self.w)
+
+        return self.d_x
 
 
 class NeuralNetwork:
@@ -191,14 +199,45 @@ class NeuralNetwork:
         Compute forward pass through all the layers in the network and return it.
         If targets are provided, return loss as well.
         """
-        raise NotImplementedError("Forward propagation not implemented for NeuralNetwork")
+        # save x
+        self.x = x
+        self.targets = data.one_hot_encoding(targets)
+
+        # for the first layer
+        hidden_layer = Layer(784, 128)
+        a_j = hidden_layer(x)
+        self.layers.append(hidden_layer)
+
+        hidden_activation = Activation("tanh")
+        z_k = hidden_activation(a_j)
+        self.layers.append(hidden_activation)
+
+        # from the hiiden layer to the ouput layer
+        output_layer = Layer(128, 10)
+        a_k = output_layer(z_k)
+        self.layers.append(output_layer)
+
+        self.y = self.softmax(a_k)
+
+        # loss and target
+        if self.targets is not None:
+            loss = self.loss(self.y, self.targets)
+
+            return self.y, loss
+
+        return self.y
 
     def backward(self):
         """
         Implement backpropagation here.
         Call backward methods of individual layer's.
         """
-        raise NotImplementedError("Backward propagation not implemented for NeuralNetwork")
+        delta = self.targets - self.y # delta for the output layer
+
+        for i in range(len(self.layers) -1, -1, -1):
+            delta = self.layers[i].backward(delta)
+
+        return delta
 
     def softmax(self, x):
         """
@@ -207,11 +246,7 @@ class NeuralNetwork:
         """
         exp = np.exp(x)
 
-        # Calculating softmax for all examples.
-        for i in range(len(x)):
-            exp[i] /= np.sum(exp[i])
-
-        return exp
+        return exp / np.sum(exp, axis=1, keepdims=True)
 
     def loss(self, logits, targets):
         """
