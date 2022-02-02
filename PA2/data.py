@@ -18,7 +18,7 @@ def one_hot_encoding(labels, num_classes=10):
     output = np.zeros(shape)
     output[np.arange(labels.shape[0]), labels] = 1
 
-    return output
+    return output.astype("int32")
 
 
 def write_to_file(path, data):

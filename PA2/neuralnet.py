@@ -204,7 +204,7 @@ class NeuralNetwork:
         """
         # save x
         self.x = x
-        self.targets = data.one_hot_encoding(targets)
+        self.targets = targets
 
         # go through all layers forward
         z = x
@@ -246,6 +246,4 @@ class NeuralNetwork:
         """
         Compute the categorical cross-entropy loss and return it.
         """
-        n = logits.shape[0]
-
-        return (targets - logits) / n
+        return -np.mean(np.log(logits[np.arange(len(targets)), targets]))
