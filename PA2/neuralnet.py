@@ -151,14 +151,17 @@ class Layer:
 
         return self.a
 
-
     def backward(self, delta):
         """
         Write the code for backward pass. This takes in gradient from its next layer as input,
         computes gradient for its weights and the delta to pass to its previous layers.
         Return self.dx
         """
-        self.d_x = np.dot(delta, self.w)
+        self.d_x = np.dot(delta, self.w.T)
+
+        self.d_w = np.dot(self.x.T, delta)
+
+        self.d_b = np.sum(delta, axis=0)
 
         return self.d_x
 
@@ -232,12 +235,12 @@ class NeuralNetwork:
         Implement backpropagation here.
         Call backward methods of individual layer's.
         """
-        delta = self.targets - self.y # delta for the output layer
+        delta = self.targets - self.y  # delta for the output layer: delta_k
 
-        for i in range(len(self.layers) -1, -1, -1):
-            delta = self.layers[i].backward(delta)
+        for i in range(len(self.layers) - 1, 0, -1):  # go through layers except the first layer
+            delta = self.layers[i].backward(delta)  # after loop, it gets the final delta
 
-        return delta
+        return np.dot(self.x.T, delta)  # this is the final gradient
 
     def softmax(self, x):
         """
