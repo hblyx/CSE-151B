@@ -246,4 +246,6 @@ class NeuralNetwork:
         """
         Compute the categorical cross-entropy loss and return it.
         """
-        return -np.mean(np.log(logits[np.arange(len(targets)), targets]))
+        n = logits.shape[0]
+
+        return (targets - logits) / n
