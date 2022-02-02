@@ -206,21 +206,12 @@ class NeuralNetwork:
         self.x = x
         self.targets = data.one_hot_encoding(targets)
 
-        # for the first layer
-        hidden_layer = Layer(784, 128)
-        a_j = hidden_layer(x)
-        self.layers.append(hidden_layer)
+        # go through all layers forward
+        z = x
+        for i in range(len(self.layers)):
+            z = self.layers[i](z)  # use the output of previous layer as the input
 
-        hidden_activation = Activation("tanh")
-        z_k = hidden_activation(a_j)
-        self.layers.append(hidden_activation)
-
-        # from the hiiden layer to the ouput layer
-        output_layer = Layer(128, 10)
-        a_k = output_layer(z_k)
-        self.layers.append(output_layer)
-
-        self.y = self.softmax(a_k)
+        self.y = self.softmax(z)  # for the last layer, we use softmax instead of activation
 
         # loss and target
         if self.targets is not None:
