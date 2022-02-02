@@ -226,12 +226,10 @@ class NeuralNetwork:
         Implement backpropagation here.
         Call backward methods of individual layer's.
         """
-        delta = self.targets - self.y  # delta for the output layer: delta_k
+        delta = data.one_hot_encoding(self.targets) - self.y  # delta for the output layer: delta_k
 
-        for i in range(len(self.layers) - 1, 0, -1):  # go through layers except the first layer
+        for i in range(len(self.layers) - 1, -1, -1):  # go through layers except the first layer
             delta = self.layers[i].backward(delta)  # after loop, it gets the final delta
-
-        return np.dot(self.x.T, delta)  # this is the final gradient
 
     def softmax(self, x):
         """
