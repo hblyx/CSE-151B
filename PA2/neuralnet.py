@@ -226,7 +226,7 @@ class NeuralNetwork:
         Implement backpropagation here.
         Call backward methods of individual layer's.
         """
-        delta = data.one_hot_encoding(self.targets) - self.y  # delta for the output layer: delta_k
+        delta = self.y - data.one_hot_encoding(self.targets)  # delta for the output layer: delta_k
 
         for i in range(len(self.layers) - 1, -1, -1):  # go through layers except the first layer
             delta = self.layers[i].backward(delta)  # after loop, it gets the final delta
