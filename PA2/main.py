@@ -11,7 +11,7 @@
 ################################################################################
 import argparse
 
-from data import load_data, load_config, generate_k_fold_set, z_score_normalize, one_hot_encoding
+from data import load_data, load_config, z_score_normalize, split_train_val
 from train import *
 
 
@@ -44,16 +44,15 @@ if __name__ == "__main__":
     # Any pre-processing on the datasets goes here.
     # Normalization dataset
     train_x, train_y = train_data
-    train_x, _ = data.z_score_normalize(train_x)
+    train_x, _ = z_score_normalize(train_x)
     train_data = train_x, train_y
 
     test_x, test_y = x_test, y_test
-    test_x, _ = data.z_score_normalize(test_x)
+    test_x, _ = z_score_normalize(test_x)
     x_test, y_test = test_x, test_y
 
     # Create validation set out of training data.
-
-    x_train, y_train, x_val, y_val = None, None, None, None
+    x_train, y_train, x_val, y_val = split_train_val(train_data, 0.8)
 
     # Run the writeup experiments here
     if args.train_mlp:

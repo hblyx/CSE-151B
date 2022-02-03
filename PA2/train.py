@@ -8,7 +8,13 @@ import copy
 from data import write_to_file, generate_minibatches
 from neuralnet import *
 
-
+# TODO: experiment=None, we need to add different experiment code.
+# TODO: You can write methods here and run the experiment in the notebook, and I will transfer them to main.py
+# TODO: part (c): add momentum to SGD()
+# TODO: The following parts only requires the network from part(c), so do part (c) first
+# TODO: part (d): simply add regularization to the loss and do the same thing
+# TODO: part (e): we can just modify the config["activation"] (yaml or change it in a notebook) to do so
+# TODO: part (f) we can just modify the config["layer_specs"] (yaml or change it in a notebook) to do so
 def train(x_train, y_train, x_val, y_val, config, experiment=None):
     """
     Train your model here using batch stochastic gradient descent and early stopping. Use config to set parameters
@@ -27,6 +33,14 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
             training and validation loss and accuracies - 1D arrays of loss and accuracy values per epoch.
             best model - an instance of class NeuralNetwork. You can use copy.deepcopy(model) to save the best model.
     """
+    # TODO: implement momentum for the update rule part (c), below is the normal SGD, but we need momentum
+    def SGD(model):
+        for i in range(len(model.layers) - 1, -1, -1):  # reversely iterate through layers
+            layer = model.layers[i]
+            if isinstance(layer, Layer):  # if the layer is a Layer instead of a activation
+                layer.w -= config["learning_rate"] * layer.d_w
+                layer.b -= config["learning_rate"] * layer.d_b
+
     train_acc = []
     val_acc = []
     train_loss = []
@@ -34,6 +48,7 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
     best_model = None
 
     model = NeuralNetwork(config=config)
+    patience = 0  # for early stopping
 
     # mini-batched SGD
     for epoch in range(config["epochs"]):
@@ -41,10 +56,13 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
         acc_train = []
         for batch in generate_minibatches((x_train, y_train), config["batch_size"]):
             x, t = batch
-            best_model = copy.deepcopy(model)
 
             model.forward(x, targets=t)
-            model.backward()  # batch SDG within backward()
+            model.backward()  # backpropagation
+
+
+            # gradient descendant
+            SGD(model)
 
             # get training loss and accuracy of this batch
             batch_loss, batch_acc = test(model, x, t)
@@ -55,9 +73,11 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
         # check validation
         loss_val, acc_val = test(model, x_val, y_val)
 
-        if config["early_stop"]: # if early stop is enabled
+        if config["early_stop"]:  # if early stop is enabled
             if len(val_loss) != 0 and loss_val > val_loss[-1]:  # if the validation loss rise up
-                break  # early stopping
+                patience += 1  # increase the patience
+            if patience > config["early_stop_epoch"]:  # if the patience goes over
+                break  # early stop
 
         loss_train = np.mean(loss_train)  # average all batchs in this epoch
         acc_train = np.mean(acc_train)  # average all batchs in this epoch
