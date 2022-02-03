@@ -41,16 +41,25 @@ if __name__ == "__main__":
     # Load the data
     train_data, (x_test, y_test) = load_data(), load_data(train=False)
 
-    # Create validation set out of training data.
-    x_train, y_train, x_val, y_val = None, None, None, None
-
     # Any pre-processing on the datasets goes here.
+    # Normalization dataset
+    train_x, train_y = train_data
+    train_x, _ = data.z_score_normalize(train_x)
+    train_data = train_x, train_y
+
+    test_x, test_y = x_test, y_test
+    test_x, _ = data.z_score_normalize(test_x)
+    x_test, y_test = test_x, test_y
+
+    # Create validation set out of training data.
+
+    x_train, y_train, x_val, y_val = None, None, None, None
 
     # Run the writeup experiments here
     if args.train_mlp:
         train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config)
     if args.check_gradients:
-        check_gradients(x_train, y_train, config)
+        check_gradients(train_data, config)
     if args.regularization:
         regularization_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config)
     if args.activation:

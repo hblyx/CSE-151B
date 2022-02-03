@@ -3,6 +3,7 @@
 # Code snippet by Eric Yang Yu, Ajit Kumar, Savyasachi
 # Winter 2022
 ################################################################################
+import math
 import os
 import pickle
 
@@ -118,3 +119,19 @@ def z_score_normalize(X, u=None, sd=None):
     if sd is None:
         sd = np.std(X, axis=0)
     return ((X - u) / sd), (u, sd)
+
+def generate_minibatches(dataset, batch_size=64):
+    # generate mini batchs for batched SGD
+    X, y = dataset
+    l_idx, r_idx = 0, batch_size
+    while r_idx < len(X):
+        yield X[l_idx:r_idx], y[l_idx:r_idx]
+        l_idx, r_idx = r_idx, r_idx + batch_size
+
+    yield X[l_idx:], y[l_idx:]
+
+def split_train_val(dataset, train_r=1.0):
+    # split dataset into train/validation sets
+    X, y = dataset
+    split_idx = math.floor(len(X) * train_r)
+    return X[:split_idx], y[:split_idx], X[split_idx:], y[split_idx:]

@@ -184,6 +184,7 @@ class NeuralNetwork:
         self.x = None  # Save the input to forward in this
         self.y = None  # Save the output vector of model in this
         self.targets = None  # Save the targets in forward in this variable
+        self.learning_rate = config["learning_rate"]
 
         # Add layers specified by layer_specs.
         for i in range(len(config['layer_specs']) - 1):
@@ -226,10 +227,20 @@ class NeuralNetwork:
         Implement backpropagation here.
         Call backward methods of individual layer's.
         """
+        # edge case (no targets specified)
+        if self.targets == None:
+            raise AssertionError("Targets not specified (targets == None)")
+
         delta = self.y - data.one_hot_encoding(self.targets)  # delta for the output layer: delta_k
 
         for i in range(len(self.layers) - 1, -1, -1):  # go through layers except the first layer
+            # pass delta
             delta = self.layers[i].backward(delta)  # after loop, it gets the final delta
+
+            # gradient descendent
+            if isinstance(self.layers[i], Layer):  # if the layer is not a activation
+                self.layers[i].w -= self.learning_rate * self.layers[i].d_w
+                self.layers[i].b -= self.learning_rate * self.layers[i].d_b
 
     def softmax(self, x):
         """
@@ -245,3 +256,14 @@ class NeuralNetwork:
         Compute the categorical cross-entropy loss and return it.
         """
         return -np.mean(np.log(logits[np.arange(len(targets)), targets]))
+
+    def predict(self):
+        return np.argmax(self.y, axis=1)
+
+    def accuracy(self):
+        if self.targets == None:
+            raise AssertionError("Targets not specified (targets == None)")
+        if self.y == None:
+            raise AssertionError("y has not been calculated (y == None)")
+
+        return np.sum(self.targets == self.predict()) / len(self.targets)
