@@ -53,9 +53,9 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
 
         # finish a epoch
         # check validation
-        loss_val, acc_val = test(x_val, y_val)
+        loss_val, acc_val = test(model, x_val, y_val)
 
-        if config["early_stop"]:
+        if config["early_stop"]: # if early stop is enabled
             if len(val_loss) != 0 and loss_val > val_loss[-1]:  # if the validation loss rise up
                 break  # early stopping
 
