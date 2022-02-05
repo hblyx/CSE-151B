@@ -203,7 +203,7 @@ def activation_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config
     """
     This function tests all the different activation functions available and then plots their performances.
     """
-    raise NotImplementedError('Activation Experiment not implemented')
+    print('Activation Experiment implemented in the notebook')
 
 
 def topology_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
@@ -215,14 +215,14 @@ def topology_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
     number of parameters roughly equal to the number of parameters of the best performing
     model previously.
     """
-    raise NotImplementedError('Topology Experiment not implemented')
+    print('Topology Experiment implemented in the notebook')
 
 
 def regularization_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
     """
     This function tests the neural network with regularization.
     """
-    raise NotImplementedError('Regularization Experiment not implemented')
+    print('Regularization Experiment implemented in the notebook')
 
 
 def check_gradients(train_data, config):
