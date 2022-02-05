@@ -130,8 +130,8 @@ class Layer:
         self.a = None  # Save the output of forward pass in this (without activation)
 
         self.d_x = None  # Save the gradient w.r.t x in this
-        self.d_w = None  # Save the gradient w.r.t w in this
-        self.d_b = None  # Save the gradient w.r.t b in this
+        self.d_w = np.zeros((in_units, out_units))  # Save the gradient w.r.t w in this
+        self.d_b = np.zeros((out_units,))  # Save the gradient w.r.t b in this
 
     def __call__(self, x):
         """
@@ -226,10 +226,6 @@ class NeuralNetwork:
         Implement backpropagation here.
         Call backward methods of individual layer's.
         """
-        # edge case (no targets specified)
-        if self.targets == None:
-            raise AssertionError("Targets not specified (targets == None)")
-
         delta = self.y - data.one_hot_encoding(self.targets)  # delta for the output layer: delta_k
 
         for i in range(len(self.layers) - 1, -1, -1):  # go through layers except the first layer
@@ -255,9 +251,4 @@ class NeuralNetwork:
         return np.argmax(self.y, axis=1)
 
     def accuracy(self):
-        if self.targets == None:
-            raise AssertionError("Targets not specified (targets == None)")
-        if self.y == None:
-            raise AssertionError("y has not been calculated (y == None)")
-
         return np.sum(self.targets == self.predict()) / len(self.targets)

@@ -5,13 +5,14 @@
 ################################################################################
 import copy
 
+import numpy as np
+
 from data import write_to_file, generate_minibatches
 from neuralnet import *
 
 
 # TODO: experiment=None, we need to add different experiment code.
 # TODO: You can write methods here and run the experiment in the notebook, and I will transfer them to main.py
-# TODO: part (c): add momentum to SGD()
 # TODO: The following parts only requires the network from part(c), so do part (c) first
 # TODO: part (d): simply add regularization to the loss and do the same thing
 # TODO: part (e): we can just modify the config["activation"] (yaml or change it in a notebook) to do so
@@ -34,14 +35,24 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
             training and validation loss and accuracies - 1D arrays of loss and accuracy values per epoch.
             best model - an instance of class NeuralNetwork. You can use copy.deepcopy(model) to save the best model.
     """
-
-    # TODO: implement momentum for the update rule part (c), below is the normal SGD, but we need momentum
-    def SGD(nn, learning_rate):
+    def SGD(nn, learning_rate, gamma, momentums_w, momentums_b):
         for i in range(len(nn.layers) - 1, -1, -1):  # reversely iterate through layers
             layer = nn.layers[i]
             if isinstance(layer, Layer):  # if the layer is a Layer instead of a activation
-                layer.w -= learning_rate * layer.d_w
-                layer.b -= learning_rate * layer.d_b
+                cur_d_w = layer.d_w
+                cur_d_b = layer.d_b
+                momentum_w = v_momentum(cur_d_w, momentums_w[i], gamma)
+                momentum_b = v_momentum(cur_d_b, momentums_b[i], gamma)
+
+                layer.w -= learning_rate * momentum_w
+                layer.b -= learning_rate * momentum_b
+
+                # update v(t-1)
+                momentums_w[i] = momentum_w
+                momentums_b[i] = momentum_b
+
+    def v_momentum(cur_grad, last_v, gamma):
+        return gamma * last_v + (1 - gamma) * cur_grad
 
     train_acc = []
     val_acc = []
@@ -50,9 +61,23 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
     best_model = None
 
     model = NeuralNetwork(config=config)
+
     patience = 0  # for early stopping
 
     # mini-batched SGD
+    # create matrix used to store last v, v(t-1)
+    momentums_w = []
+    momentums_b = []
+    # initialize the v(t-1) matrix
+    for i in range(len(model.layers)):  # for each layer do the initialization
+        layer = model.layers[i]
+        if isinstance(layer, Layer):
+            momentums_w.append(layer.d_w)
+            momentums_b.append(layer.d_b)
+        else:  # if this is a activation layer, we can simply use a zero since it does not need momentum
+            momentums_w.append(0)
+            momentums_b.append(0)
+
     for epoch in range(config["epochs"]):
         loss_train = []  # training loss per epoch including all mini-batchs
         acc_train = []
@@ -63,7 +88,7 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
             model.backward()  # backpropagation
 
             # gradient descendant
-            SGD(model, config["learning_rate"])
+            SGD(model, config["learning_rate"], config["momentum_gamma"], momentums_w, momentums_b)
 
             # get training loss and accuracy of this batch
             batch_loss, batch_acc = test(model, x, t)
