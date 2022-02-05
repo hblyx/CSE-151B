@@ -35,7 +35,8 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
             training and validation loss and accuracies - 1D arrays of loss and accuracy values per epoch.
             best model - an instance of class NeuralNetwork. You can use copy.deepcopy(model) to save the best model.
     """
-    def SGD(nn, learning_rate, gamma, momentums_w, momentums_b):
+
+    def SGD(nn, learning_rate, gamma, momentums_w, momentums_b, alpha, experiment=None):
         for i in range(len(nn.layers) - 1, -1, -1):  # reversely iterate through layers
             layer = nn.layers[i]
             if isinstance(layer, Layer):  # if the layer is a Layer instead of a activation
@@ -44,8 +45,15 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
                 momentum_w = v_momentum(cur_d_w, momentums_w[i], gamma)
                 momentum_b = v_momentum(cur_d_b, momentums_b[i], gamma)
 
-                layer.w -= learning_rate * momentum_w
-                layer.b -= learning_rate * momentum_b
+                if experiment == "L2":
+                    layer.w -= learning_rate * momentum_w + (2 * alpha) * layer.w
+                    layer.b -= learning_rate * momentum_b + (2 * alpha) * layer.b
+                elif experiment == "L1":
+                    layer.w -= learning_rate * momentum_w + alpha * np.abs(layer.w)
+                    layer.b -= learning_rate * momentum_b + alpha * np.abs(layer.b)
+                else:
+                    layer.w -= learning_rate * momentum_w
+                    layer.b -= learning_rate * momentum_b
 
                 # update v(t-1)
                 momentums_w[i] = momentum_w
@@ -53,6 +61,24 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
 
     def v_momentum(cur_grad, last_v, gamma):
         return gamma * last_v + (1 - gamma) * cur_grad
+
+    def L2_loss(nn, alpha):
+        output = 0.0
+        for i in range(len(nn.layers)):
+            layer = nn.layers[i]
+            if isinstance(layer, Layer):  # if the layer has weights
+                output += np.sum(layer.w ** 2)
+                output += np.sum(layer.b ** 2)
+        return alpha * output
+
+    def L1_loss(nn, alpha):
+        output = 0.0
+        for i in range(len(nn.layers)):
+            layer = nn.layers[i]
+            if isinstance(layer, Layer):  # if the layer has weights
+                output += np.sum(np.abs(layer.w))
+                output += np.sum(np.abs(layer.b))
+        return alpha * output
 
     train_acc = []
     val_acc = []
@@ -88,16 +114,26 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
             model.backward()  # backpropagation
 
             # gradient descendant
-            SGD(model, config["learning_rate"], config["momentum_gamma"], momentums_w, momentums_b)
+            SGD(model, config["learning_rate"], config["momentum_gamma"],
+                momentums_w, momentums_b,
+                config["L2_penalty"], experiment=experiment)
 
             # get training loss and accuracy of this batch
             batch_loss, batch_acc = test(model, x, t)
+            if experiment == "L2":
+                batch_loss += L2_loss(model, config["L2_penalty"])
+            elif experiment == "L1":
+                batch_loss += L1_loss(model, config["L2_penalty"])
             loss_train.append(batch_loss)
             acc_train.append(batch_acc)
 
         # finish a epoch
         # check validation
         loss_val, acc_val = test(model, x_val, y_val)
+        if experiment == "L2":
+            loss_val += L2_loss(model, config["L2_penalty"])
+        elif experiment == "L1":
+            loss_val += L1_loss(model, config["L2_penalty"])
 
         if config["early_stop"]:  # if early stop is enabled
             if len(val_loss) != 0 and loss_val > val_loss[-1]:  # if the validation loss rise up
