@@ -13,6 +13,8 @@ def train_val_split(train_dataset):
     train_subset, val_subset = random_split(train_dataset, [train_size, val_size],
                                             generator=torch.Generator().manual_seed(42))
     return train_subset, val_subset
+
+
 #################################################
 
 ########## DO NOT change this variable ##########
@@ -23,6 +25,8 @@ transform_test = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]
 )
 #################################################
+
+
 
 class FoodDataset(Dataset):
     def __init__(self, data_csv, transforms=None):
@@ -62,7 +66,7 @@ def get_dataloaders(train_csv, test_csv, transform=None, batch_size_train=64,
     ###########################################################
 
     # [train_loader, val_loader, test_loader]
-    dataloaders = create_dataloaders(train_set, batch_size=batch_size_train),\
-                  create_dataloaders(val_set, batch_size=batch_size_val),\
+    dataloaders = create_dataloaders(train_set, batch_size=batch_size_train), \
+                  create_dataloaders(val_set, batch_size=batch_size_val), \
                   create_dataloaders(test_dataset, batch_size=batch_size_test)
     return dataloaders
