@@ -13,8 +13,6 @@ def train_val_split(train_dataset):
     train_subset, val_subset = random_split(train_dataset, [train_size, val_size],
                                             generator=torch.Generator().manual_seed(42))
     return train_subset, val_subset
-
-
 #################################################
 
 ########## DO NOT change this variable ##########
@@ -24,8 +22,6 @@ transform_test = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]
 )
-
-
 #################################################
 
 class FoodDataset(Dataset):
