@@ -37,7 +37,7 @@ class FoodDataset(Dataset):
         img = Image.open(fp)
         if self.transforms is not None:
             img = self.transforms(img)
-        return img, idx  # (img, class)
+        return img, idx
 
     def __len__(self):
         return len(self.data)
@@ -47,20 +47,13 @@ def get_dataset(csv_path, transform):
     return FoodDataset(csv_path, transform)
 
 
-def create_dataloaders(dataset, batch_size=None):
-    if batch_size is None:
-        return dataset
-
-    l_idx, r_idx = 0, batch_size
-    while r_idx < len(dataset):
-        yield dataset[l_idx:r_idx]
-        l_idx, r_idx = r_idx, r_idx + batch_size
-
-    yield dataset[l_idx:]
+def create_dataloaders(dataset, batch_size=1, shuffle=False):
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
 
 
-def get_dataloaders(train_csv, test_csv, transform_train=None, batch_size=64):
-    train_dataset = get_dataset(train_csv, transform_train)
+def get_dataloaders(train_csv, test_csv, transform=None, batch_size_train=64,
+                    batch_size_val=64, batch_size_test=100):
+    train_dataset = get_dataset(train_csv, transform)
 
     ########## DO NOT change the following two lines ##########
     # If you change it to achieve better results, we will deduct points.
@@ -69,7 +62,7 @@ def get_dataloaders(train_csv, test_csv, transform_train=None, batch_size=64):
     ###########################################################
 
     # [train_loader, val_loader, test_loader]
-    dataloaders = create_dataloaders(train_set, batch_size=batch_size), \
-                  create_dataloaders(val_set), \
-                  create_dataloaders(test_dataset)
+    dataloaders = create_dataloaders(train_set, batch_size=batch_size_train),\
+                  create_dataloaders(val_set, batch_size=batch_size_val),\
+                  create_dataloaders(test_dataset, batch_size=batch_size_test)
     return dataloaders
