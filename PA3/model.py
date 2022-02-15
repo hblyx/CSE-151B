@@ -50,6 +50,7 @@ class baseline(nn.Module):
         # adaptive_avg_pool(output_size=1x1)
         x = self.aap(x)
         # fc1(out_features=128)+dropout+ReLU
+        x = x.view(-1, num_flat_features(x))  # flatten the tensor
         x = F.relu(self.dropout(self.fc1(x)))
         # fc2(out_features=num_classes)
         x = self.fc2(x)
