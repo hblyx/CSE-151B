@@ -1,4 +1,5 @@
 # Modified by Colin Wang, Weitang Liu
+from data import *
 
 def prepare_model(device, args=None):
     # load model, criterion, optimizer, and learning rate scheduler

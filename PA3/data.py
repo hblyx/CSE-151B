@@ -25,7 +25,9 @@ transform_test = transforms.Compose([
 
 class FoodDataset(Dataset):
     def __init__(self, data_csv, transforms=None):
+        # this read the csv to find the according jpg, and results in PIL objects
         self.data = genfromtxt(data_csv, delimiter=',', dtype=str)
+
         self.transforms = transforms
         
     def __getitem__(self, index):
@@ -34,7 +36,7 @@ class FoodDataset(Dataset):
         img = Image.open(fp)
         if self.transforms is not None:
             img = self.transforms(img)
-        return (img, idx)
+        return (img, idx) # (img, class)
 
     def __len__(self):
         return len(self.data)
@@ -42,8 +44,11 @@ class FoodDataset(Dataset):
 def get_dataset(csv_path, transform):
     return FoodDataset(csv_path, transform)
 
-def create_dataloaders(train_set, val_set, test_set, args=None):
-    raise NotImplementedError()
+def create_dataloaders(train_set, val_set, test_set, batch_size=64):
+    # pass the dataset get by get_dataset() with splited data by train_val_split()
+    X_train, y_train = train_set
+    X_val, y_val = val_set
+    X_test, y_test = test_set
 
 def get_dataloaders(train_csv, test_csv, args=None):
     raise NotImplementedError()
