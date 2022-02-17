@@ -27,11 +27,9 @@ def train_model_baseline(model, criterion, optimizer, device, dataloaders, args=
         train_l, val_l = [], []
         correct_train, total_train = 0, 0
         correct_val, total_val = 0, 0
-        mb = 0
 
         print("Epoch", epoch, "starts")
         for X, y in loaders[0]:  # training set
-            print("minibatch", mb)
             # move to GPU
             X = X.to(device)
             y = y.to(device)
@@ -50,24 +48,22 @@ def train_model_baseline(model, criterion, optimizer, device, dataloaders, args=
             loss_train.backward()
             optimizer.step()
 
-            for X_val, y_val in loaders[1]:  # validation set
-                # move to GPU
-                X_val = X_val.to(device)
-                y_val = y_val.to(device)
-
-                val_pred = model(X_val)
-                loss_val = criterion(val_pred, y_val)
-                val_l.append(loss_val.item())
-
-                preds = torch.argmax(val_pred.data, 1)
-                total_val += y_val.shape[0]
-                correct_val += torch.sum(preds == y_val)
-
-            mb += 1
-
 
         train_loss.append(np.mean(train_l))
         train_acc.append(float(correct_train) / float(total_train))
+
+        for X, y in loaders[1]: # validation
+            # move to GPU
+            X = X.to(device)
+            y = y.to(device)
+
+            y_pred = model(X)
+            loss_val = criterion(y_pred, y)
+            val_l.append(loss_val)
+
+            preds = torch.argmax(y_pred.data, 1)
+            total_val += y.shape[0]
+            correct_val += torch.sum(preds == y)
 
         val_loss_avg = np.mean(val_l)
         val_loss.append(val_loss_avg)
