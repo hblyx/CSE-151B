@@ -57,7 +57,7 @@ def create_dataloaders(dataset, batch_size=1, shuffle=False, num_workers=3, pin_
 
 
 def get_dataloaders(train_csv, test_csv, transform=None, batch_size_train=32,
-                    batch_size_val=10, batch_size_test=1):
+                    batch_size_val=5, batch_size_test=1):
     train_dataset = get_dataset(train_csv, transform)
 
     ########## DO NOT change the following two lines ##########
