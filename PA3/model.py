@@ -33,10 +33,12 @@ class baseline(nn.Module):
 
         self.aap = nn.AdaptiveAvgPool2d((1, 1))
         # after convolution, we get fully connected layer
-        self.fc1 = nn.Linear(in_features=128 * 3 * 3, out_features=128)
+        self.fc1 = nn.Linear(in_features=128 * 1 * 1, out_features=128)
         self.dropout = nn.Dropout()
 
         self.fc2 = nn.Linear(in_features=128, out_features=20)  # 20 classes
+
+        self.initialize_weights()
 
     def forward(self, x):
         # conv1(out_channels=64, kernel_size=3)+BN+ReLU
@@ -44,7 +46,7 @@ class baseline(nn.Module):
         # conv2(out_channels=128, kernel_size=3)+BN+ReLU
         x = F.relu(self.conv2_bn(self.conv2(x)))
         # conv3(out_channels=128, kernel_size=3)+BN+ReLU -> maxpool1(kernel_size=3)
-        x = F.max_pool1d(F.relu(self.conv3_bn(self.conv3(x))), kernel_size=3)
+        x = F.max_pool2d(F.relu(self.conv3_bn(self.conv3(x))), kernel_size=3)
         # conv4(out_channels=128, kernel_size=3, stride=2)+BN+ReLU
         x = F.relu(self.conv4_bn(self.conv4(x)))
         # adaptive_avg_pool(output_size=1x1)
@@ -56,6 +58,11 @@ class baseline(nn.Module):
         x = self.fc2(x)
 
         return x
+
+    def initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                nn.init.xavier_normal(m.weight)
 
 
 class custom(nn.Module):
