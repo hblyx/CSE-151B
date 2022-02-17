@@ -59,7 +59,7 @@ def train_model_baseline(model, criterion, optimizer, device, dataloaders, max_e
 
         print("Epoch", epoch, "ends")
 
-    model = baseline()
+    model = baseline().to(device)
     model.load_state_dict(torch.load("checkpoint.pt"))
 
     # return the model with weight selected by best performance
@@ -88,7 +88,7 @@ def evaluate(dataloader, model, criterion, device, is_test=False):
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
 
-    acc /= len(dataloader.dataset)
+    acc = correct / len(dataloader.dataset)
     loss = np.mean(loss)
 
     print('\n{} set: Accuracy: {}/{} ({:.0f}%)\n'.format(
