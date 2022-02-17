@@ -3,26 +3,50 @@ import torch
 import numpy as np
 
 from data import *
-from model import baseline
+from model import baseline, custom1
 
 
-def prepare_model_baseline(device, args=None):
+def prepare_model(device, model_type="baseline"):
     # load model, criterion, optimizer, and learning rate scheduler
-    model = baseline().to(device)
+    model = create_model(device, model_type=model_type)
+
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    if model_type == "custom3" or model_type == "custom":
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
+
+        return model, criterion, optimizer, scheduler
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
 
     return model, criterion, optimizer
 
+def create_model(device, model_type="baseline"):
+    if model_type == "custom1":
+        model = custom1().to(device)
+    elif model_type == "custom2":
+        model = baseline().to(device)
+    elif model_type == "custom3":
+        model = baseline().to(device)
+    elif model_type == "custom":
+        model = custom1().to(device)
+    else:
+        model = baseline().to(device)
 
-def train_model_baseline(model, criterion, optimizer, device, dataloaders, max_epoch=25, args=None):
+    return model
+
+
+def train_model(model, criterion, optimizer, device, dataloaders, max_epoch=25, scheduler=None, model_type="baseline"):
     model.train()
+
+    cp_name = model_type + ".pt"
 
     train_loss, val_loss = [], []
     train_acc, val_acc = [], []
     best_val_loss = float('inf')
 
-    for epoch in range(25):
+    for epoch in range(max_epoch):
         train_l = []
         correct_train, total_train = 0, 0
 
@@ -55,12 +79,15 @@ def train_model_baseline(model, criterion, optimizer, device, dataloaders, max_e
 
         if val_los < best_val_loss:  # if current validation loss is less
             best_val_loss = val_los
-            torch.save(model.state_dict(), "checkpoint.pt")
+            torch.save(model.state_dict(), cp_name)
+
+        if scheduler is not None:
+            scheduler.step()
 
         print("Epoch", epoch, "ends")
 
-    model = baseline().to(device)
-    model.load_state_dict(torch.load("checkpoint.pt"))
+    model = create_model(device, model_type=model_type)
+    model.load_state_dict(torch.load(cp_name))
 
     # return the model with weight selected by best performance
     return model, train_loss, val_loss, train_acc, val_acc
@@ -74,11 +101,10 @@ def evaluate(dataloader, model, criterion, device, is_test=False):
 
     model.eval()
     loss = []
-    acc = 0
     correct = 0
 
     with torch.no_grad():
-        for data, target in dataloader:
+        for batch_idx, (data, target) in enumerate(dataloader):
             data, target = data.to(device), target.to(device)
 
             output = model(data)
