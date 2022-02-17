@@ -68,6 +68,6 @@ def get_dataloaders(train_csv, test_csv, transform=None, batch_size_train=40,
 
     # [train_loader, val_loader, test_loader]
     dataloaders = create_dataloaders(train_set, batch_size=batch_size_train), \
-                  create_dataloaders(val_set, batch_size=batch_size_val, num_workers=1), \
+                  create_dataloaders(val_set, batch_size=batch_size_val), \
                   create_dataloaders(test_dataset, batch_size=batch_size_test)
     return dataloaders
