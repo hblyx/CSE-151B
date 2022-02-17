@@ -15,62 +15,46 @@ def prepare_model_baseline(device, args=None):
     return model, criterion, optimizer
 
 
-def train_model_baseline(model, criterion, optimizer, device, dataloaders, args=None):
-    # get data loaders
-    loaders = get_dataloaders("./food-101/train.csv", "./food-101/test.csv", transform=transform_test)
+def train_model_baseline(model, criterion, optimizer, device, dataloaders, max_epoch=25, args=None):
+    model.train()
 
     train_loss, val_loss = [], []
     train_acc, val_acc = [], []
     best_val_loss = float('inf')
 
     for epoch in range(25):
-        train_l, val_l = [], []
+        train_l = []
         correct_train, total_train = 0, 0
-        correct_val, total_val = 0, 0
 
         print("Epoch", epoch, "starts")
-        for X, y in loaders[0]:  # training set
+        print("Going through training set")
+        for batch_idx, (X, y) in enumerate(dataloaders[0]):  # training set
             # move to GPU
-            X = X.to(device)
-            y = y.to(device)
-
-            y_pred = model(X)  # forward pass
-            loss_train = criterion(y_pred, y)  # compute loss
-            train_l.append(loss_train.item())
-
-            # accuracy
-            preds = torch.argmax(y_pred.data, 1)
-            total_train += y.shape[0]
-            correct_train += torch.sum(preds == y)
-
-            # zero gradients to backward and update weights
-            optimizer.zero_grad()
-            loss_train.backward()
+            X, y = X.to(device), y.to(device)
+            optimizer.zero_grad()  # zero gradients
+            output = model(X)  # forward pass
+            loss = criterion(output, y)  # compute loss
+            loss.backward()
             optimizer.step()
 
+            train_l.append(loss.item())
+
+            # accuracy
+            preds = torch.argmax(output.data, 1)
+            total_train += y.shape[0]
+            correct_train += torch.sum(preds == y)
 
         train_loss.append(np.mean(train_l))
         train_acc.append(float(correct_train) / float(total_train))
 
-        for X, y in loaders[1]: # validation
-            # move to GPU
-            X = X.to(device)
-            y = y.to(device)
+        print("Going through validation set")
+        val_los, val_ac = evaluate(dataloaders[1], model, criterion, device)
 
-            y_pred = model(X)
-            loss_val = criterion(y_pred, y)
-            val_l.append(loss_val)
+        val_loss.append(val_los)
+        val_acc.append(val_ac)
 
-            preds = torch.argmax(y_pred.data, 1)
-            total_val += y.shape[0]
-            correct_val += torch.sum(preds == y)
-
-        val_loss_avg = np.mean(val_l)
-        val_loss.append(val_loss_avg)
-        val_acc.append(float(correct_val) / float(total_val))
-
-        if val_loss_avg < best_val_loss:  # if current validation loss is less
-            best_val_loss = val_loss_avg
+        if val_los < best_val_loss:  # if current validation loss is less
+            best_val_loss = val_los
             torch.save(model.state_dict(), "checkpoint.pt")
 
         print("Epoch", epoch, "ends")
@@ -83,17 +67,32 @@ def train_model_baseline(model, criterion, optimizer, device, dataloaders, args=
 
 
 # add your own functions if necessary
-def evaluate_test(test_loader, net, device):
-    total = 0
+def evaluate(dataloader, model, criterion, device, is_test=False):
+    test = "Validation"
+    if is_test:
+        test = "Test"
+
+    model.eval()
+    loss = []
+    acc = 0
     correct = 0
-    for X, y in test_loader:
-        X = X.to(device)
-        y = y.to(device)
-        outputs = net(X)
-        predictions = torch.argmax(outputs.data, 1)
 
-        total += y.shape[0]
+    with torch.no_grad():
+        for data, target in dataloader:
+            data, target = data.to(device), target.to(device)
 
-        correct += torch.sum(predictions == y)
+            output = model(data)
+            los = criterion(output, target)
+            loss.append(los.item())
 
-    return float(correct) / float(total)
+            pred = output.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
+
+    acc /= len(dataloader.dataset)
+    loss = np.mean(loss)
+
+    print('\n{} set: Accuracy: {}/{} ({:.0f}%)\n'.format(
+        test, correct, len(dataloader.dataset),
+        100. * correct / len(dataloader.dataset)))
+
+    return loss, acc

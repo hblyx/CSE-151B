@@ -51,13 +51,13 @@ def get_dataset(csv_path, transform):
     return FoodDataset(csv_path, transform)
 
 
-def create_dataloaders(dataset, batch_size=1, shuffle=False, num_workers=2, pin_memory=True):
+def create_dataloaders(dataset, batch_size=1, shuffle=True, num_workers=2, pin_memory=True):
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
                       num_workers=num_workers, pin_memory=pin_memory)
 
 
 def get_dataloaders(train_csv, test_csv, transform=None, batch_size_train=40,
-                    batch_size_val=40, batch_size_test=1):
+                    batch_size_val=40, batch_size_test=40):
     train_dataset = get_dataset(train_csv, transform)
 
     ########## DO NOT change the following two lines ##########
@@ -68,6 +68,6 @@ def get_dataloaders(train_csv, test_csv, transform=None, batch_size_train=40,
 
     # [train_loader, val_loader, test_loader]
     dataloaders = create_dataloaders(train_set, batch_size=batch_size_train), \
-                  create_dataloaders(val_set, batch_size=batch_size_val), \
+                  create_dataloaders(val_set, batch_size=batch_size_val, num_workers=1), \
                   create_dataloaders(test_dataset, batch_size=batch_size_test)
     return dataloaders

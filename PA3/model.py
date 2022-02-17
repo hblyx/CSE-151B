@@ -61,7 +61,7 @@ class baseline(nn.Module):
 
     def initialize_weights(self):
         for m in self.modules():
-            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            if isinstance(m, nn.Conv2d):
                 nn.init.xavier_normal(m.weight)
 
 
