@@ -63,6 +63,8 @@ def train_model_baseline(model, criterion, optimizer, device, dataloaders, args=
                 total_val += y_val.shape[0]
                 correct_val += torch.sum(preds == y_val)
 
+            mb += 1
+
 
         train_loss.append(np.mean(train_l))
         train_acc.append(float(correct_train) / float(total_train))
