@@ -19,17 +19,17 @@ def prepare_model(device, model_type="baseline"):
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-
     return model, criterion, optimizer
 
+
 def create_model(device, model_type="baseline"):
-    if model_type == "custom1":
+    if model_type == "custom1":  # finally use to build the final custom model
         model = custom1().to(device)
-    elif model_type == "custom2":
+    elif model_type == "custom2":  # had used to build experiments
         model = baseline().to(device)
-    elif model_type == "custom3":
+    elif model_type == "custom3":  # had used to build experiments
         model = baseline().to(device)
-    elif model_type == "custom":
+    elif model_type == "custom":  # had used to build experiments
         model = custom1().to(device)
     else:
         model = baseline().to(device)
@@ -115,7 +115,7 @@ def evaluate(dataloader, model, criterion, device, is_test=False):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     acc = correct / len(dataloader.dataset)
-    loss = np.mean(loss)
+    loss = np.sum(loss)
 
     print('\n{} set: Accuracy: {}/{} ({:.0f}%)\n'.format(
         test, correct, len(dataloader.dataset),
