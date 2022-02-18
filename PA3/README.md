@@ -7,7 +7,9 @@ Specifically, data.py contains methods handling data and data argumentation, mod
 
 main.py not implemented since we ran all our experiments and training through notebooks with DataHub and GPU assigned.
 
-PA3_baseline contains the training process and visualize the test/validation performance, loss plot, and accuracy plot of the baseline model.
+PA3_baseline.ipynb contains the training process and visualize the test/validation performance, loss plot, and accuracy plot of the baseline model.
 
-PA3_custom contains the training process and visualize the test/validation performance, loss plot, and accuracy plot of the custom model. Experiments of custom model cannot be fully displayed in the notebook, since we did use multiple notebook and additional PC with GPU to do the experiment. We can only show the final (combined) custom model. Specifically, since we did not really record logs of training and experiment, we can not reproduce all experiments. However, since we recorded performance data by hand, we can also make the Change Table for experiments.
+PA3_custom.ipynb contains the training process and visualize the test/validation performance, loss plot, and accuracy plot of the custom model. Experiments of custom model cannot be fully displayed in the notebook, since we did use multiple notebook and additional PC with GPU to do the experiment. We can only show the final (combined) custom model. Specifically, since we did not really record logs of training and experiment, we can not reproduce all experiments. However, since we recorded performance data by hand, we can also make the Change Table for experiments.
 
+
+Feature Maps.ipynb contains the code for generating weihts maps and feature maps for each model
