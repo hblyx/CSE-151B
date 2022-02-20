@@ -134,3 +134,11 @@ dmypy.json
 /food-101/license_agreement.txt
 /food-101/README.txt
 /pytorch-mnist.ipynb
+/screenshots/baseline_acc.JPG
+/screenshots/baseline_loss.JPG
+/screenshots/custom_acc.JPG
+/screenshots/custom_loss.JPG
+/screenshots/feature_maps_custom.jpg
+/screenshots/weight_maps_custom.jpg
+/screenshots/weight_maps_vgg.jpg
+/resnet_18(2).pt
