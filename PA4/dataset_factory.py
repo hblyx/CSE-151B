@@ -15,7 +15,7 @@ from coco_dataset import CocoDataset, collate_fn
 
 # Builds your datasets here based on the configuration.
 # You are not required to modify this code but you are allowed to.
-def get_datasets(config_data):
+def get_datasets(config_data, transform=None):
     images_root_dir = config_data['dataset']['images_root_dir']
     root_train = os.path.join(images_root_dir, 'train')
     root_val = os.path.join(images_root_dir, 'val')
@@ -34,16 +34,16 @@ def get_datasets(config_data):
     vocabulary = load_vocab(train_annotation_file, vocab_threshold)
 
     train_data_loader = get_coco_dataloader(train_ids_file_path, root_train, train_annotation_file, coco, vocabulary,
-                                            config_data)
+                                            config_data, transform)
     val_data_loader = get_coco_dataloader(val_ids_file_path, root_val, train_annotation_file, coco, vocabulary,
-                                          config_data)
+                                          config_data, transform)
     test_data_loader = get_coco_dataloader(test_ids_file_path, root_test, test_annotation_file, coco_test, vocabulary,
                                            config_data)
 
     return coco_test, vocabulary, train_data_loader, val_data_loader, test_data_loader
 
 
-def get_coco_dataloader(img_ids_file_path, imgs_root_dir, annotation_file_path, coco_obj, vocabulary, config_data):
+def get_coco_dataloader(img_ids_file_path, imgs_root_dir, annotation_file_path, coco_obj, vocabulary, config_data, transform=None):
     with open(img_ids_file_path, 'r') as f:
         reader = csv.reader(f)
         img_ids = list(reader)
@@ -57,7 +57,8 @@ def get_coco_dataloader(img_ids_file_path, imgs_root_dir, annotation_file_path, 
                           json=annotation_file_path,
                           ids=ann_ids,
                           vocab=vocabulary,
-                          img_size=config_data['dataset']['img_size'])
+                          img_size=config_data['dataset']['img_size'],
+                          transform=transform)
     return DataLoader(dataset=dataset,
                       batch_size=config_data['dataset']['batch_size'],
                       shuffle=True,

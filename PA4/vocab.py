@@ -70,3 +70,4 @@ def build_vocab(json, threshold):
     for i, word in enumerate(words):
         vocab.add_word(word)
     return vocab
+

@@ -39,6 +39,8 @@ class CocoDataset(data.Dataset):
         self.resize = transforms.Compose(
             [transforms.Resize(img_size, interpolation=2), transforms.CenterCrop(img_size)])
 
+        self.transform = transform
+
     def __getitem__(self, index):
         """Returns one data pair (image and caption)."""
         coco = self.coco
@@ -48,8 +50,12 @@ class CocoDataset(data.Dataset):
         img_id = coco.anns[ann_id]['image_id']
         path = coco.loadImgs(img_id)[0]['file_name'];
         image = Image.open(os.path.join(self.root, path)).convert('RGB')
-        image = self.resize(image)
-        image = self.normalize(np.asarray(image))
+
+        if self.transform is not None:
+            image = self.transform(image)
+        else:
+            image = self.resize(image)
+            image = self.normalize(np.asarray(image))
 
         # Convert caption (string) to word ids.
         tokens = nltk.tokenize.word_tokenize(str(caption).lower())
