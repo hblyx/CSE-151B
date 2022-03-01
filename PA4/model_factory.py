@@ -80,13 +80,19 @@ class baseline_decoder(nn.Module):
             x, hidden = self.LSTM(feature, hidden)
             outputs = self.out(x)
             outputs = outputs.squeeze(1)
-            _, max_idx = torch.max(outputs, dim=1)
-            out.append(max_idx.cpu().numpy()[0].item())
 
-            if (max_idx == 2 or len(out) >= max_len):
+            max_idx = outputs.argmax(dim=1)
+
+            batch_idx = max_idx.cpu().tolist()  # the i-th word_idx for all feature in batch
+
+            out.append(batch_idx)
+
+            if (len(out) >= max_len):
                 break
 
             feature = self.word_embed(max_idx)
-            feature = inputs.unsqueeze(1)
+            feature = feature.unsqueeze(1)
 
-            return final_output
+        out = torch.transpose(torch.tensor(out), 0, 1).tolist()  # change it to (n, t)
+
+        return out
