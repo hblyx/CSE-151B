@@ -186,3 +186,5 @@ def evaluate(dataloader, model, criterion, device, is_test=False):
         100. * correct / len(dataloader.dataset)))
 
     return loss, acc
+
+
