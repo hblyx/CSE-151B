@@ -71,7 +71,8 @@ class baseline_decoder(nn.Module):
         return (torch.zeros(self.num_layers, batch_size, self.hidden_size).to(self.device),
                 torch.zeros(self.num_layers, batch_size, self.hidden_size).to(self.device))
 
-    def predict(self, feature, max_len=20):  # take batch output from the output layer to convert it to caption
+    def predict(self, feature, deterministic=True, temp=0.0, max_len=20):  # take batch output from the output layer
+        # to convert it to caption
         out = []
         batch_size = feature.shape[0]
         hidden = self.init_hidden(batch_size)
@@ -81,7 +82,13 @@ class baseline_decoder(nn.Module):
             outputs = self.out(x)
             outputs = outputs.squeeze(1)
 
-            max_idx = outputs.argmax(dim=1)
+            if deterministic:
+                max_idx = outputs.argmax(dim=1)
+            else:
+                # Stochastic
+                p = nn.functional.softmax(outputs / temp)
+                max_idx = torch.multinomial(p, 1)
+                max_idx = max_idx.reshape(-1)
 
             batch_idx = max_idx.cpu().tolist()  # the i-th word_idx for all feature in batch
 
@@ -132,7 +139,8 @@ class RNN_decoder(nn.Module):
     def init_hidden(self, batch_size):
         return torch.zeros(self.num_layers, batch_size, self.hidden_size).to(self.device)  # RNN use H_0 only
 
-    def predict(self, feature, max_len=20):  # take batch output from the output layer to convert it to caption
+    def predict(self, feature, deterministic=True, temp=0.0, max_len=20):  # take batch output from the output layer to
+        # convert it to caption
         out = []
         batch_size = feature.shape[0]
         hidden = self.init_hidden(batch_size)
@@ -142,7 +150,13 @@ class RNN_decoder(nn.Module):
             outputs = self.out(x)
             outputs = outputs.squeeze(1)
 
-            max_idx = outputs.argmax(dim=1)
+            if deterministic:
+                max_idx = outputs.argmax(dim=1)
+            else:
+                # Stochastic
+                p = nn.functional.softmax(outputs / temp)
+                max_idx = torch.multinomial(p, 1)
+                max_idx = max_idx.reshape(-1)
 
             batch_idx = max_idx.cpu().tolist()  # the i-th word_idx for all feature in batch
 
