@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/CSE 151B.iml" filepath="$PROJECT_DIR$/.idea/CSE 151B.iml" />
       <module fileurl="file://$PROJECT_DIR$/../DSC 190/.idea/DSC 190.iml" filepath="$PROJECT_DIR$/../DSC 190/.idea/DSC 190.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../DSC-190-HW1/.idea/DSC-190-HW1.iml" filepath="$PROJECT_DIR$/../DSC-190-HW1/.idea/DSC-190-HW1.iml" />
       <module fileurl="file://$PROJECT_DIR$/../DSC 190/dsProject/.idea/dsProject.iml" filepath="$PROJECT_DIR$/../DSC 190/dsProject/.idea/dsProject.iml" />
     </modules>
   </component>
